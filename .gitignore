@@ -1,0 +1,22 @@
+# Secrete si chei sensibile
+*vault-keys*.json
+*.pem
+*.key
+id_rsa*
+
+# Terraform state si lock
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform.lock.hcl
+
+# Ansible & Python cache
+*.retry
+__pycache__/
+*.pyc
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/

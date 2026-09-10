@@ -1,0 +1,37 @@
+---
+- name: "Check if K3s binary is already installed"
+  ansible.builtin.stat:
+    path: /usr/local/bin/k3s
+  register: k3s_binary
+
+- name: "Install K3s server with public TLS SAN and permissive kubeconfig permissions"
+  ansible.builtin.shell: >
+    curl -sfL https://get.k3s.io |
+    INSTALL_K3S_EXEC="server --tls-san {{ ansible_host }} --write-kubeconfig-mode 644" sh -
+  when: not k3s_binary.stat.exists
+
+- name: "Ensure K3s systemd service is started and enabled"
+  ansible.builtin.systemd:
+    name: k3s
+    state: started
+    enabled: true
+
+- name: "Wait for K3s API server to become ready on port 6443"
+  ansible.builtin.wait_for:
+    port: 6443
+    host: 127.0.0.1
+    delay: 5
+    timeout: 60
+
+- name: "Read remote kubeconfig content"
+  ansible.builtin.slurp:
+    src: /etc/rancher/k3s/k3s.yaml
+  register: raw_kubeconfig
+
+- name: "Save sanitized kubeconfig locally with dynamic server endpoint"
+  ansible.builtin.copy:
+    content: "{{ raw_kubeconfig.content | b64decode | from_yaml | combine({'clusters': [{'cluster': {'certificate-authority-data': (raw_kubeconfig.content | b64decode | from_yaml).clusters[0].cluster['certificate-authority-data'], 'server': 'https://' ~ ansible_host ~ ':6443'}, 'name': (raw_kubeconfig.content | b64decode | from_yaml).clusters[0].name}]}, recursive=True) | to_nice_yaml }}"
+    dest: "{{ playbook_dir }}/nexus-kubeconfig.yaml"
+    mode: '0600'
+  delegate_to: localhost
+  become: false

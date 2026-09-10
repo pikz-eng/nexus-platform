@@ -1,0 +1,52 @@
+---
+- name: "Check if swapfile already exists"
+  ansible.builtin.stat:
+    path: /swapfile
+  register: swap_stat
+
+- name: "Allocate 2GB swapfile"
+  ansible.builtin.command: "fallocate -l 2048M /swapfile"
+  when: not swap_stat.stat.exists
+
+- name: "Set 0600 permissions on swapfile"
+  ansible.builtin.file:
+    path: /swapfile
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: "Format swapfile (mkswap)"
+  ansible.builtin.command: "mkswap /swapfile"
+  when: not swap_stat.stat.exists
+
+- name: "Enable swap (swapon)"
+  ansible.builtin.command: "swapon /swapfile"
+  when: not swap_stat.stat.exists
+
+- name: "Persist swap in /etc/fstab"
+  ansible.posix.mount:
+    name: none
+    src: /swapfile
+    fstype: swap
+    opts: sw
+    state: present
+
+- name: "Load required kernel modules for Kubernetes networking"
+  community.general.modprobe:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - overlay
+    - br_netfilter
+
+- name: "Configure sysctl kernel parameters"
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: true
+  loop:
+    - { name: 'vm.swappiness', value: '10' }
+    - { name: 'net.bridge.bridge-nf-call-iptables', value: '1' }
+    - { name: 'net.bridge.bridge-nf-call-ip6tables', value: '1' }
+    - { name: 'net.ipv4.ip_forward', value: '1' }
