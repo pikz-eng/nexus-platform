@@ -23,7 +23,7 @@ spec:
         app: nexus-app
       annotations:
         vault.hashicorp.com/agent-inject: "true"
-            vault.hashicorp.com/vault-address: "http://vault-internal.vault.svc.cluster.local:8200"
+        vault.hashicorp.com/vault-address: "http://vault-internal.vault.svc.cluster.local:8200"
         vault.hashicorp.com/role: "nexus-app-role"
         vault.hashicorp.com/agent-inject-secret-db-creds: "secret/data/nexus/database"
         vault.hashicorp.com/agent-inject-template-db-creds: |
