@@ -1,17 +1,38 @@
 import os
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from fastapi import FastAPI
+from pydantic import BaseModel
 
-class SimpleHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        secret_path = "/vault/secrets/db-creds"
-        has_secret = os.path.exists(secret_path)
-        self.send_response(200)
-        self.send_header("Content-type", "application/json")
-        self.end_headers()
-        response = f'{{"status": "running", "environment": "production", "secrets_mounted": {str(has_secret).lower()}}}\n'
-        self.wfile.write(response.encode())
+app = FastAPI(title="Nexus Platform API", version="1.0.0")
 
-if __name__ == "__main__":
-    server = HTTPServer(("0.0.0.0", 8080), SimpleHandler)
-    print("Server running on port 8080...")
-    server.serve_forever()
+def get_vault_db_creds():
+secret_path = "/vault/secrets/db-creds"
+creds = {"mounted": False, "username": None}
+if os.path.exists(secret_path):
+    creds["mounted"] = True
+    try:
+        with open(secret_path, "r") as f:
+            for line in f:
+                if line.startswith("DB_USER="):
+                    creds["username"] = line.strip().split("=", 1)[1]
+    except Exception as e:
+        creds["error"] = str(e)
+return creds
+
+@app.get("/")
+def read_root():
+vault_status = get_vault_db_creds()
+return {
+    "app": "nexus-platform",
+    "environment": os.getenv("APP_ENV", "production"),
+    "status": "healthy",
+    "vault_secret_injected": vault_status["mounted"],
+    "database_user": vault_status.get("username", "none")
+}
+
+@app.get("/healthz")
+def healthz():
+return {"status": "ok"}
+
+@app.get("/readyz")
+def readyz():
+return {"ready": True}
