@@ -1,91 +1,87 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-name: nexus-sa
-namespace: staging
+  name: nexus-sa
+  namespace: staging
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-name: nexus-app
-namespace: staging
-labels:
-app: nexus-app
-env: staging
-spec:
-  strategy:
-    type: Recreate
-replicas: 1
-selector:
-matchLabels:
-  app: nexus-app
-template:
-metadata:
+  name: nexus-app
+  namespace: staging
   labels:
     app: nexus-app
-  annotations:
-    vault.hashicorp.com/agent-inject: "true"
-    vault.hashicorp.com/vault-addr: "http://vault-internal.vault.svc.cluster.local:8200"
-    vault.hashicorp.com/vault-address: "http://vault-internal.vault.svc.cluster.local:8200"
-    vault.hashicorp.com/role: "nexus-app-role"
-    vault.hashicorp.com/agent-inject-secret-db-creds: "secret/data/nexus/database"
-    vault.hashicorp.com/agent-inject-template-db-creds: |
-      {{- with secret "secret/data/nexus/database" -}}
-      DB_USER={{ .Data.data.username }}
-      DB_PASSWORD={{ .Data.data.password }}
-      {{- end -}}
+    env: staging
 spec:
+  replicas: 1
   strategy:
     type: Recreate
-  serviceAccountName: nexus-sa
-  securityContext:
-    runAsNonRoot: true
-    runAsUser: 10001
-    runAsGroup: 10001
-    fsGroup: 10001
-    seccompProfile:
-      type: RuntimeDefault
-  containers:
-    - name: nexus-app
-      image: ghcr.io/pikz-eng/nexus-app:latest
-      imagePullPolicy: Always
-      ports:
-        - containerPort: 8080
-          protocol: TCP
-      env:
-        - name: APP_ENV
-          value: "staging"
+  selector:
+    matchLabels:
+      app: nexus-app
+  template:
+    metadata:
+      labels:
+        app: nexus-app
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/vault-addr: "http://vault-internal.vault.svc.cluster.local:8200"
+        vault.hashicorp.com/vault-address: "http://vault-internal.vault.svc.cluster.local:8200"
+        vault.hashicorp.com/role: "nexus-app-role"
+        vault.hashicorp.com/agent-inject-secret-db-creds: "secret/data/nexus/database"
+        vault.hashicorp.com/agent-inject-template-db-creds: |
+          {{- with secret "secret/data/nexus/database" -}}
+          DB_USER={{ .Data.data.username }}
+          DB_PASSWORD={{ .Data.data.password }}
+          {{- end -}}
+    spec:
+      serviceAccountName: nexus-sa
       securityContext:
-        allowPrivilegeEscalation: false
-        readOnlyRootFilesystem: true
-        capabilities:
-          drop:
-            - ALL
-      resources:
-        limits:
-          cpu: "200m"
-          memory: "256Mi"
-        requests:
-          cpu: "50m"
-          memory: "64Mi"
-      volumeMounts:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: nexus-app
+          image: ghcr.io/pikz-eng/nexus-app:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: APP_ENV
+              value: "staging"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+          volumeMounts:
+            - name: tmp-volume
+              mountPath: /tmp
+      volumes:
         - name: tmp-volume
-          mountPath: /tmp
-  volumes:
-    - name: tmp-volume
-      emptyDir: {}
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-name: nexus-service
-namespace: staging
+  name: nexus-service
+  namespace: staging
 spec:
-  strategy:
-    type: Recreate
-selector:
-app: nexus-app
-ports:
-- protocol: TCP
-  port: 80
-  targetPort: 8080
+  selector:
+    app: nexus-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
