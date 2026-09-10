@@ -49,7 +49,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: nexus-app
-          image: ghcr.io/pikz-eng/nexus-app:77ecb9ff0b700084fd6e3699870481ba6fcd772d
+          image: ghcr.io/pikz-eng/nexus-app:b6df53f83ed3961ce96c0a999e6534cb48746e8d
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
