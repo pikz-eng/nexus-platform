@@ -1,0 +1,297 @@
+apiVersion: v1
+items:
+- apiVersion: argoproj.io/v1alpha1
+  kind: Application
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: '{"apiVersion":"argoproj.io/v1alpha1","kind":"Application","metadata":{"annotations":{},"name":"nexus-production","namespace":"argocd"},"spec":{"destination":{"namespace":"production","server":"https://kubernetes.default.svc"},"project":"default","source":{"path":"k8s/production","repoURL":"https://github.com/pikz-eng/nexus-platform.git","targetRevision":"production"},"syncPolicy":{"automated":{"prune":true,"selfHeal":true}}}}
+
+        '
+    creationTimestamp: '2026-09-10T12:39:17Z'
+    generation: 90
+    name: nexus-production
+    namespace: argocd
+    resourceVersion: '18053'
+    uid: 905826fb-4bc5-4b21-9e0f-db80f82cc16d
+  spec:
+    destination:
+      namespace: production
+      server: https://kubernetes.default.svc
+    project: default
+    source:
+      path: k8s/production
+      repoURL: https://github.com/pikz-eng/nexus-platform.git
+      targetRevision: production
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+  status:
+    controllerNamespace: argocd
+    health:
+      lastTransitionTime: '2026-09-10T14:58:49Z'
+      status: Healthy
+    history:
+    - deployStartedAt: '2026-09-10T12:39:18Z'
+      deployedAt: '2026-09-10T12:39:19Z'
+      id: 0
+      initiatedBy:
+        automated: true
+      revision: c3e5ab9e0b337cf2e299145845671f11d54ab9c4
+      source:
+        path: k8s/production
+        repoURL: https://github.com/pikz-eng/nexus-platform.git
+        targetRevision: production
+    - deployStartedAt: '2026-09-10T14:57:16Z'
+      deployedAt: '2026-09-10T14:57:20Z'
+      id: 1
+      initiatedBy:
+        automated: true
+      revision: 37f5b5d93a0956647b90efb73e1a5fa478050baa
+      source:
+        path: k8s/production
+        repoURL: https://github.com/pikz-eng/nexus-platform.git
+        targetRevision: production
+    operationState:
+      finishedAt: '2026-09-10T14:57:22Z'
+      message: successfully synced (all tasks run)
+      operation:
+        initiatedBy:
+          automated: true
+        retry:
+          limit: 5
+        sync:
+          prune: true
+          revision: 37f5b5d93a0956647b90efb73e1a5fa478050baa
+          source:
+            path: k8s/production
+            repoURL: https://github.com/pikz-eng/nexus-platform.git
+            targetRevision: production
+      phase: Succeeded
+      startedAt: '2026-09-10T14:57:16Z'
+      syncResult:
+        resources:
+        - group: ''
+          hookPhase: Running
+          kind: ServiceAccount
+          message: serviceaccount/nexus-sa unchanged
+          name: nexus-sa
+          namespace: production
+          status: Synced
+          syncPhase: Sync
+          version: v1
+        - group: ''
+          hookPhase: Running
+          kind: Service
+          message: service/nexus-service unchanged
+          name: nexus-service
+          namespace: production
+          status: Synced
+          syncPhase: Sync
+          version: v1
+        - group: apps
+          hookPhase: Running
+          images:
+          - ghcr.io/pikz-eng/nexus-app:latest
+          kind: Deployment
+          message: deployment.apps/nexus-app configured
+          name: nexus-app
+          namespace: production
+          status: Synced
+          syncPhase: Sync
+          version: v1
+        revision: 37f5b5d93a0956647b90efb73e1a5fa478050baa
+        source:
+          path: k8s/production
+          repoURL: https://github.com/pikz-eng/nexus-platform.git
+          targetRevision: production
+    reconciledAt: '2026-09-10T15:42:54Z'
+    resourceHealthSource: appTree
+    resources:
+    - kind: Service
+      name: nexus-service
+      namespace: production
+      status: Synced
+      version: v1
+    - kind: ServiceAccount
+      name: nexus-sa
+      namespace: production
+      status: Synced
+      version: v1
+    - group: apps
+      kind: Deployment
+      name: nexus-app
+      namespace: production
+      status: Synced
+      version: v1
+    sourceHydrator: {}
+    sourceType: Directory
+    summary:
+      images:
+      - ghcr.io/pikz-eng/nexus-app:latest
+      - hashicorp/vault:2.0.4
+    sync:
+      comparedTo:
+        destination:
+          namespace: production
+          server: https://kubernetes.default.svc
+        source:
+          path: k8s/production
+          repoURL: https://github.com/pikz-eng/nexus-platform.git
+          targetRevision: production
+      revision: 37f5b5d93a0956647b90efb73e1a5fa478050baa
+      status: Synced
+- apiVersion: argoproj.io/v1alpha1
+  kind: Application
+  metadata:
+    annotations:
+      argocd.argoproj.io/hydrate: normal
+      kubectl.kubernetes.io/last-applied-configuration: '{"apiVersion":"argoproj.io/v1alpha1","kind":"Application","metadata":{"annotations":{},"name":"nexus-staging","namespace":"argocd"},"spec":{"destination":{"namespace":"staging","server":"https://kubernetes.default.svc"},"project":"default","source":{"path":"k8s/staging","repoURL":"https://github.com/pikz-eng/nexus-platform.git","targetRevision":"staging"},"syncPolicy":{"automated":{"prune":true,"selfHeal":true}}}}
+
+        '
+    creationTimestamp: '2026-09-10T12:39:16Z'
+    generation: 162
+    name: nexus-staging
+    namespace: argocd
+    resourceVersion: '18060'
+    uid: db1b1207-3384-4b06-a9a6-8e13e19179a8
+  spec:
+    destination:
+      namespace: staging
+      server: https://kubernetes.default.svc
+    project: default
+    source:
+      path: k8s/staging
+      repoURL: https://github.com/pikz-eng/nexus-platform.git
+      targetRevision: staging
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+  status:
+    controllerNamespace: argocd
+    health:
+      lastTransitionTime: '2026-09-10T14:34:52Z'
+      status: Healthy
+    history:
+    - deployStartedAt: '2026-09-10T12:39:18Z'
+      deployedAt: '2026-09-10T12:39:19Z'
+      id: 0
+      initiatedBy:
+        automated: true
+      revision: c3e5ab9e0b337cf2e299145845671f11d54ab9c4
+      source:
+        path: k8s/staging
+        repoURL: https://github.com/pikz-eng/nexus-platform.git
+        targetRevision: staging
+    - deployStartedAt: '2026-09-10T13:49:26Z'
+      deployedAt: '2026-09-10T13:49:29Z'
+      id: 1
+      initiatedBy:
+        automated: true
+      revision: e9430c75c2f35159668d0276766cf44b3bf9d48e
+      source:
+        path: k8s/staging
+        repoURL: https://github.com/pikz-eng/nexus-platform.git
+        targetRevision: staging
+    - deployStartedAt: '2026-09-10T14:34:40Z'
+      deployedAt: '2026-09-10T14:34:41Z'
+      id: 2
+      initiatedBy:
+        username: admin
+      revision: 197feb463b913cb39abfaae9f2f4166efe568f2f
+      source:
+        path: k8s/staging
+        repoURL: https://github.com/pikz-eng/nexus-platform.git
+        targetRevision: staging
+    operationState:
+      finishedAt: '2026-09-10T14:34:43Z'
+      message: successfully synced (all tasks run)
+      operation:
+        initiatedBy:
+          username: admin
+        retry: {}
+        sync:
+          revision: 197feb463b913cb39abfaae9f2f4166efe568f2f
+          source:
+            path: k8s/staging
+            repoURL: https://github.com/pikz-eng/nexus-platform.git
+            targetRevision: staging
+          syncStrategy:
+            hook: {}
+      phase: Succeeded
+      startedAt: '2026-09-10T14:34:40Z'
+      syncResult:
+        resources:
+        - group: ''
+          hookPhase: Running
+          kind: ServiceAccount
+          message: serviceaccount/nexus-sa configured
+          name: nexus-sa
+          namespace: staging
+          status: Synced
+          syncPhase: Sync
+          version: v1
+        - group: ''
+          hookPhase: Running
+          kind: Service
+          message: service/nexus-service configured
+          name: nexus-service
+          namespace: staging
+          status: Synced
+          syncPhase: Sync
+          version: v1
+        - group: apps
+          hookPhase: Running
+          images:
+          - ghcr.io/pikz-eng/nexus-app:latest
+          kind: Deployment
+          message: deployment.apps/nexus-app configured
+          name: nexus-app
+          namespace: staging
+          status: Synced
+          syncPhase: Sync
+          version: v1
+        revision: 197feb463b913cb39abfaae9f2f4166efe568f2f
+        source:
+          path: k8s/staging
+          repoURL: https://github.com/pikz-eng/nexus-platform.git
+          targetRevision: staging
+    reconciledAt: '2026-09-10T15:43:07Z'
+    resourceHealthSource: appTree
+    resources:
+    - kind: Service
+      name: nexus-service
+      namespace: staging
+      status: Synced
+      version: v1
+    - kind: ServiceAccount
+      name: nexus-sa
+      namespace: staging
+      status: Synced
+      version: v1
+    - group: apps
+      kind: Deployment
+      name: nexus-app
+      namespace: staging
+      status: Synced
+      version: v1
+    sourceHydrator: {}
+    sourceType: Directory
+    summary:
+      images:
+      - ghcr.io/pikz-eng/nexus-app:latest
+      - hashicorp/vault:2.0.4
+    sync:
+      comparedTo:
+        destination:
+          namespace: staging
+          server: https://kubernetes.default.svc
+        source:
+          path: k8s/staging
+          repoURL: https://github.com/pikz-eng/nexus-platform.git
+          targetRevision: staging
+      revision: 197feb463b913cb39abfaae9f2f4166efe568f2f
+      status: Synced
+kind: List
+metadata: {}
