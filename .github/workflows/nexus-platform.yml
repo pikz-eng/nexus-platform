@@ -54,6 +54,9 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.ref_name }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -124,3 +127,20 @@ jobs:
         env:
           VAULT_ADDR: ${{ env.VAULT_ADDR }}
           VAULT_TOKEN: ${{ env.VAULT_TOKEN }}
+
+      - name: 10. GitOps Commit - Update Image Tag
+        if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          sed -i 's|image: ghcr.io/pikz-eng/nexus-app:.*|image: ghcr.io/pikz-eng/nexus-app:${{ github.sha }}|g' k8s/staging/deployment.yaml
+          
+          git add k8s/staging/deployment.yaml
+          if ! git diff --quiet || ! git diff --staged --quiet; then
+            git commit -m "chore(gitops): deploy image tag ${{ github.sha }} [skip ci]"
+            git pull --rebase origin staging
+            git push origin staging
+          else
+            echo "Nicio modificare de imagine necesară."
+          fi
