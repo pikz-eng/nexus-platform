@@ -13,6 +13,8 @@ labels:
 app: nexus-app
 env: staging
 spec:
+  strategy:
+    type: Recreate
 replicas: 1
 selector:
 matchLabels:
@@ -33,6 +35,8 @@ metadata:
       DB_PASSWORD={{ .Data.data.password }}
       {{- end -}}
 spec:
+  strategy:
+    type: Recreate
   serviceAccountName: nexus-sa
   securityContext:
     runAsNonRoot: true
@@ -77,6 +81,8 @@ metadata:
 name: nexus-service
 namespace: staging
 spec:
+  strategy:
+    type: Recreate
 selector:
 app: nexus-app
 ports:
