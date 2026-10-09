@@ -52,7 +52,7 @@ jobs:
     needs: shift-left-security
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: Checkout Application Code
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -78,7 +78,7 @@ jobs:
             "$VAULT_ADDR/v1/auth/jwt/login" | jq -r '.auth.client_token')
 
           if [ "$VAULT_TOKEN" = "null" ] || [ -z "$VAULT_TOKEN" ]; then
-            echo "Eroare: Nu s-a putut obține token-ul Vault prin OIDC."
+            echo "Error: Failed to retrieve Vault client token via OIDC."
             exit 1
           fi
 
@@ -92,7 +92,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 6. Docker Build
+      - name: 6. Docker Build and Push
         id: build
         run: |
           IMAGE_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
@@ -128,19 +128,37 @@ jobs:
           VAULT_ADDR: ${{ env.VAULT_ADDR }}
           VAULT_TOKEN: ${{ env.VAULT_TOKEN }}
 
-      - name: 10. GitOps Commit - Update Image Tag
-        if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
+      - name: 10. Checkout GitOps Repository
+        if: github.event_name == 'push'
+        uses: actions/checkout@v4
+        with:
+          repository: 'pikz-eng/nexus-gitops'
+          token: ${{ secrets.GITOPS_PAT }}
+          path: 'nexus-gitops'
+
+      - name: 11. GitOps Sync - Update Deployment Manifest
+        if: github.event_name == 'push'
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
-          sed -i 's|image: ghcr.io/pikz-eng/nexus-app:.*|image: ghcr.io/pikz-eng/nexus-app:${{ github.sha }}|g' k8s/staging/deployment.yaml
-          
-          git add k8s/staging/deployment.yaml
-          if ! git diff --quiet || ! git diff --staged --quiet; then
-            git commit -m "chore(gitops): deploy image tag ${{ github.sha }} [skip ci]"
-            git pull --rebase origin staging
-            git push origin staging
+          TARGET_ENV="${{ github.ref_name }}"
+          MANIFEST_PATH="nexus-gitops/k8s/${TARGET_ENV}/deployment.yaml"
+
+          if [ ! -f "$MANIFEST_PATH" ]; then
+            echo "Error: Target manifest $MANIFEST_PATH does not exist."
+            exit 1
+          fi
+
+          echo "Updating deployment manifest in $MANIFEST_PATH with tag ${{ github.sha }}..."
+          sed -i "s|image: ghcr.io/pikz-eng/nexus-app:.*|image: ghcr.io/pikz-eng/nexus-app:${{ github.sha }}|g" "$MANIFEST_PATH"
+
+          cd nexus-gitops
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "k8s/${TARGET_ENV}/deployment.yaml"
+
+          if ! git diff --staged --quiet; then
+            git commit -m "chore(gitops): update ${TARGET_ENV} image tag to ${{ github.sha }} [skip ci]"
+            git push origin main
+            echo "Successfully updated nexus-gitops repository."
           else
-            echo "Nicio modificare de imagine necesară."
+            echo "No changes detected in deployment manifest."
           fi
