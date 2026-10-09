@@ -14,7 +14,7 @@ permissions:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository_owner }}/nexus-app
-  VAULT_ADDR: http://63.180.183.215:32000
+  VAULT_ADDR: http://18.193.118.219:32000
 
 jobs:
   shift-left-security:
