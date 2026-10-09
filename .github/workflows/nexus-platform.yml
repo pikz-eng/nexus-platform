@@ -54,9 +54,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.ref_name }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -78,7 +75,7 @@ jobs:
             "$VAULT_ADDR/v1/auth/jwt/login" | jq -r '.auth.client_token')
 
           if [ "$VAULT_TOKEN" = "null" ] || [ -z "$VAULT_TOKEN" ]; then
-            echo "Eroare: Nu s-a putut obține token-ul Vault prin OIDC."
+            echo "Error: Failed to retrieve Vault client token via OIDC."
             exit 1
           fi
 
@@ -142,5 +139,5 @@ jobs:
             git pull --rebase origin staging
             git push origin staging
           else
-            echo "Nicio modificare de imagine necesară."
+            echo "No image changes required."
           fi
